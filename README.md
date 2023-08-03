@@ -2,6 +2,8 @@
 
 `glowy.nvim` is a Neovim plugin to preview Markdown files using [charmbracelet/glow](https://github.com/charmbracelet/glow).
 
+![Demo gif of live updating Markdown preview](https://user-images.githubusercontent.com/8648891/258194101-9e78b245-3f3e-4bb5-a7de-c8cf513832c1.gif)
+
 ## Installation
 
 First ensure you have `glow` installed on your system. If it is not in `$PATH`, you can configure an explicit path in the plugin settings.

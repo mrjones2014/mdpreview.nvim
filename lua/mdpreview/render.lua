@@ -1,11 +1,11 @@
-local Config = require('glowy.config')
+local Config = require('mdpreview.config')
 
 local M = {}
 
 function M.render(buf, on_done)
   buf = buf or 0
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  local job_id = vim.fn.jobstart({ Config.glow_path, '-s', 'dark' }, {
+  local job_id = vim.fn.jobstart({ Config.cli_path, '-s', 'dark' }, {
     rpc = false,
     stdin = 'pipe',
     stdout_buffered = true,
@@ -24,7 +24,7 @@ function M.render(buf, on_done)
     end,
   })
   if job_id < 1 then
-    vim.notify('Failed to start "glow" job', vim.log.levels.ERROR)
+    vim.notify('Failed to start CLI job', vim.log.levels.ERROR)
     return
   end
 

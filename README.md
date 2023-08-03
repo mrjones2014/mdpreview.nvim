@@ -1,18 +1,19 @@
-# `glowy.nvim`
+# `mdpreview.nvim`
 
-`glowy.nvim` is a Neovim plugin to preview Markdown files using [charmbracelet/glow](https://github.com/charmbracelet/glow).
+`mdpreview.nvim` is a Neovim plugin to preview Markdown files using CLI Markdown renderers. By default, uses [charmbracelet/glow](https://github.com/charmbracelet/glow).
+It can use any CLI that can render Markdown from `STDIN`.
 
 ![Demo gif of live updating Markdown preview](https://user-images.githubusercontent.com/8648891/258194101-9e78b245-3f3e-4bb5-a7de-c8cf513832c1.gif)
 
 ## Installation
 
-First ensure you have `glow` installed on your system. If it is not in `$PATH`, you can configure an explicit path in the plugin settings.
+First ensure you have `glow` (or another Markdown renderer CLI) installed on your system. If it is not in `$PATH`, you can configure an explicit path in the plugin settings.
 
 ### With `lazy.nvim`
 
 ```lua
 {
-  'mrjones2014/glowy.nvim',
+  'mrjones2014/mdpreview.nvim',
   ft = 'markdown', -- you can lazy load on markdown files only
   -- requires the `terminal` filetype to render ASCII color and format codes
   dependencies = { 'norcalli/nvim-terminal.lua', config = true },
@@ -21,15 +22,15 @@ First ensure you have `glow` installed on your system. If it is not in `$PATH`, 
 
 ## Usage
 
-From a Markdown file, run the `:Glowy` command to start a live-updating preview in a vertical split.
+From a Markdown file, run the `:Mdpreview` command to start a live-updating preview in a vertical split.
 
 ## Configuration
 
 Default configuration shown below:
 
 ```lua
-require('glowy').setup({
-  -- specify manually if `glow` is not on `$PATH`
+require('mdpreview').setup({
+  -- specify manually if `glow` is not on `$PATH` or you want to use another CLI.
   glow_path = 'glow',
   -- if you don't want to use a vertical split, create your own window
   -- and return the window ID

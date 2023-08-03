@@ -1,7 +1,7 @@
-local Config = require('glowy.config')
-local Renderer = require('glowy.render')
+local Config = require('mdpreview.config')
+local Renderer = require('mdpreview.render')
 
----@class GlowyView
+---@class MdpView
 ---@field source_buf number source Markdown buffer
 ---@field dest_buf number destination buffer being rendered into
 ---@field dest_win number destination window being rendered into
@@ -9,23 +9,22 @@ local Renderer = require('glowy.render')
 
 local M = {}
 
----@type GlowyView[]
+---@type MdpView[]
 M.views = {}
 
 ---Create a session
 ---@param source_buf number
 ---@param source_win number cursor will be moved back to this window after setting up the view
----@return GlowyView
+---@return MdpView
 function M.new(source_buf, source_win)
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')
-  vim.api.nvim_buf_set_option(dest_buf, 'filetype', 'glowpreview')
   vim.api.nvim_buf_set_option(dest_buf, 'modifiable', false)
 
   -- keymaps
   local keymaps_opts = { noremap = true, silent = true, buffer = dest_buf }
-  vim.keymap.set('n', 'q', require('glowy').stop_preview, keymaps_opts)
-  vim.keymap.set('n', '<Esc>', require('glowy').stop_preview, keymaps_opts)
+  vim.keymap.set('n', 'q', require('mdpreview').stop_preview, keymaps_opts)
+  vim.keymap.set('n', '<Esc>', require('mdpreview').stop_preview, keymaps_opts)
 
   local dest_win = Config.create_preview_win()
   -- fallback
@@ -69,7 +68,7 @@ end
 
 ---Get the view session
 ---@param buf number|nil source or destination buffer ID
----@return GlowyView|nil
+---@return MdpView|nil
 function M.get(buf)
   buf = buf or vim.api.nvim_win_get_buf(0)
   for _, view in pairs(M.views) do

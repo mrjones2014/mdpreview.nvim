@@ -1,8 +1,8 @@
-vim.api.nvim_create_user_command('Glowy', function(opts)
+vim.api.nvim_create_user_command('Mdpreview', function(opts)
   if opts and opts.bang then
-    require('glowy').stop_preview()
+    require('mdpreview').stop_preview()
   else
-    require('glowy').preview()
+    require('mdpreview').preview()
   end
 end, {
   complete = 'file',

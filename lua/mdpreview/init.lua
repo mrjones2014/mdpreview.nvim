@@ -1,5 +1,5 @@
-local Config = require('glowy.config')
-local Views = require('glowy.views')
+local Config = require('mdpreview.config')
+local Views = require('mdpreview.views')
 
 local M = {}
 
@@ -8,8 +8,8 @@ function M.setup(user_cfg)
 end
 
 function M.preview()
-  if vim.fn.executable('glow') == 0 then
-    vim.notify('glow not installed', vim.log.levels.ERROR)
+  if vim.fn.executable(Config.cli_path) == 0 then
+    vim.notify(string.format('%s not installed', Config.cli_path), vim.log.levels.ERROR)
     return
   end
 
@@ -17,7 +17,7 @@ function M.preview()
   if #vim.tbl_filter(function(filetype)
     return filetype == ft
   end, Config.filetypes) == 0 then
-    vim.notify('glowy only works on markdown files', vim.log.levels.ERROR)
+    vim.notify('mdpreview only works on markdown files', vim.log.levels.ERROR)
     return
   end
 

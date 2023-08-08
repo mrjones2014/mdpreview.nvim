@@ -32,8 +32,8 @@ Default configuration shown below:
 
 ```lua
 require('mdpreview').setup({
-  -- specify manually if `glow` is not on `$PATH` or you want to use another CLI.
-  cli_path = 'glow',
+  -- specify manually if `glow` is not on `$PATH` or you want to use another CLI, or use different args
+  cli_args = { 'glow', '-s', 'dark' },
   -- enabled on these filetypes
   filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
   renderer = {

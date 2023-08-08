@@ -1,5 +1,5 @@
 return {
-  cli_path = 'glow',
+  cli_args = { 'glow', '-s', 'dark' },
   filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
   renderer = {
     backend = 'buffer',

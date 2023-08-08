@@ -5,13 +5,21 @@ local M = {}
 
 function M.setup(user_cfg)
   Config = vim.tbl_deep_extend('force', Config, user_cfg)
+  if type(Config.cli_args) ~= 'table' then
+    Config.cli_args = { Config.cli_args }
+  end
 end
 
 ---Start a preview, optionally passing overrides for renderer opts
 ---@param renderer_opts table|nil
 function M.preview(renderer_opts)
-  if vim.fn.executable(Config.cli_path) == 0 then
-    vim.notify(string.format('%s not installed', Config.cli_path), vim.log.levels.ERROR)
+  if #Config.cli_args < 1 then
+    vim.notify('Config.cli_args is not set', vim.log.levels.ERROR)
+    return
+  end
+
+  if vim.fn.executable(Config.cli_args[1]) == 0 then
+    vim.notify(string.format('%s not installed', Config.cli_args[1]), vim.log.levels.ERROR)
     return
   end
 

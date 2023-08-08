@@ -5,7 +5,7 @@ local M = {}
 function M.render(buf, on_done)
   buf = buf or 0
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  local job_id = vim.fn.jobstart({ Config.cli_path, '-s', 'dark' }, {
+  local job_id = vim.fn.jobstart(Config.cli_args, {
     rpc = false,
     stdin = 'pipe',
     stdout_buffered = true,

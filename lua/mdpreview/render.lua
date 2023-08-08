@@ -32,21 +32,4 @@ function M.render(buf, on_done)
   vim.fn.chanclose(job_id, 'stdin')
 end
 
-function M.render_into_buf_callback(source_buf, dest_buf)
-  return function()
-    local lines = vim.api.nvim_buf_get_lines(source_buf, 0, vim.api.nvim_buf_line_count(0), false)
-    if vim.tbl_isempty(lines) then
-      vim.notify('buffer is empty', vim.log.levels.ERROR)
-      return
-    end
-    M.render(source_buf, function(data)
-      if data and #data > 0 then
-        vim.bo[dest_buf].modifiable = true
-        vim.api.nvim_buf_set_lines(dest_buf, 0, -1, false, data)
-        vim.bo[dest_buf].modifiable = false
-      end
-    end)
-  end
-end
-
 return M

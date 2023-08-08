@@ -49,7 +49,20 @@ function M.new(source_buf, source_win)
   vim.api.nvim_win_set_option(dest_win, 'signcolumn', 'no')
   vim.api.nvim_win_set_option(dest_win, 'number', false)
 
-  local render_callback = Renderer.render_into_buf_callback(source_buf, dest_buf)
+  local render_callback = function()
+    local lines = vim.api.nvim_buf_get_lines(source_buf, 0, vim.api.nvim_buf_line_count(0), false)
+    if vim.tbl_isempty(lines) then
+      vim.notify('buffer is empty', vim.log.levels.ERROR)
+      return
+    end
+    require('mdpreview.render').render(source_buf, function(data)
+      if data and #data > 0 then
+        vim.bo[dest_buf].modifiable = true
+        vim.api.nvim_buf_set_lines(dest_buf, 0, -1, false, data)
+        vim.bo[dest_buf].modifiable = false
+      end
+    end)
+  end
   render_callback()
   local autocmd_id = vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
     callback = render_callback,

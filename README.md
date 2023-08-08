@@ -31,14 +31,21 @@ Default configuration shown below:
 ```lua
 require('mdpreview').setup({
   -- specify manually if `glow` is not on `$PATH` or you want to use another CLI.
-  glow_path = 'glow',
-  -- if you don't want to use a vertical split, create your own window
-  -- and return the window ID
-  create_preview_win = function()
-    vim.cmd('vsp')
-    return vim.api.nvim_get_current_win()
-  end,
+  cli_path = 'glow',
   -- enabled on these filetypes
   filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
+  renderer = {
+    -- use the nvim buffer renderer
+    backend = 'buffer',
+    -- options for the renderer backend
+    opts = {
+      -- if you don't want to use a vertical split, create your own window
+      -- and return the window ID
+      create_preview_win = function()
+        vim.cmd('vsp')
+        return vim.api.nvim_get_current_win()
+      end,
+    },
+  },
 })
 ```

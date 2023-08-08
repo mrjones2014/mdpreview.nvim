@@ -1,21 +1,34 @@
 local Config = require('mdpreview.config')
 local Renderer = require('mdpreview.render')
 
----@class MdpView
+---@class MdpBufferView
 ---@field source_buf number source Markdown buffer
 ---@field dest_buf number destination buffer being rendered into
 ---@field dest_win number destination window being rendered into
 ---@field autocmd_id number ID of the autocmd that updates the view
 
-local M = {}
+---@type MdpBufferView[]
+local views = {}
 
----@type MdpView[]
-M.views = {}
+---Get the view session
+---@param buf number|nil source or destination buffer ID
+---@return MdpBufferView|nil
+local function get(buf)
+  buf = buf or vim.api.nvim_win_get_buf(0)
+  for _, view in pairs(views) do
+    if view.source_buf == buf or view.dest_buf == buf then
+      return view
+    end
+  end
+
+  return nil
+end
+
+local M = {}
 
 ---Create a session
 ---@param source_buf number
 ---@param source_win number cursor will be moved back to this window after setting up the view
----@return MdpView
 function M.new(source_buf, source_win)
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')
@@ -26,7 +39,7 @@ function M.new(source_buf, source_win)
   vim.keymap.set('n', 'q', require('mdpreview').stop_preview, keymaps_opts)
   vim.keymap.set('n', '<Esc>', require('mdpreview').stop_preview, keymaps_opts)
 
-  local dest_win = Config.create_preview_win()
+  local dest_win = Config.renderer.opts.create_preview_win()
   -- fallback
   if not dest_win or not vim.api.nvim_win_is_valid(dest_win) then
     vim.cmd('vsp')
@@ -57,36 +70,21 @@ function M.new(source_buf, source_win)
     once = true,
   })
 
-  M.views[source_buf] = {
+  views[source_buf] = {
     source_buf = source_buf,
     dest_buf = dest_buf,
     dest_win = dest_win,
     autocmd_id = autocmd_id,
   }
-  return M.views[source_buf]
-end
-
----Get the view session
----@param buf number|nil source or destination buffer ID
----@return MdpView|nil
-function M.get(buf)
-  buf = buf or vim.api.nvim_win_get_buf(0)
-  for _, view in pairs(M.views) do
-    if view.source_buf == buf or view.dest_buf == buf then
-      return view
-    end
-  end
-
-  return nil
 end
 
 function M.destroy(buf)
-  local session = M.get(buf)
+  local session = get(buf)
   if session then
     pcall(vim.api.nvim_win_close, session.dest_win, true)
     pcall(vim.api.nvim_buf_delete, session.dest_buf, { force = true })
     pcall(vim.api.nvim_del_autocmd, session.autocmd_id)
-    M.views[session.source_buf] = nil
+    views[session.source_buf] = nil
   end
 end
 

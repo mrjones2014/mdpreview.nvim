@@ -4,6 +4,8 @@ local Renderer = require('mdpreview.render')
 ---@class MdpBufferView
 ---@field source_buf number source Markdown buffer
 ---@field dest_buf number destination buffer being rendered into
+---@field source_win number source window
+---@field source_win_opts table
 ---@field dest_win number destination window being rendered into
 ---@field autocmd_id number ID of the autocmd that updates the view
 
@@ -29,7 +31,12 @@ local M = {}
 ---Create a session
 ---@param source_buf number
 ---@param source_win number cursor will be moved back to this window after setting up the view
-function M.new(source_buf, source_win)
+---@param opts table|nil override default options
+function M.new(source_buf, source_win, opts)
+  local source_win_opts = {
+    signcolumn = vim.wo[source_win].signcolumn,
+    number = vim.wo[source_win].number,
+  }
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')
   vim.api.nvim_buf_set_option(dest_buf, 'modifiable', false)
@@ -39,7 +46,14 @@ function M.new(source_buf, source_win)
   vim.keymap.set('n', 'q', require('mdpreview').stop_preview, keymaps_opts)
   vim.keymap.set('n', '<Esc>', require('mdpreview').stop_preview, keymaps_opts)
 
-  local dest_win = Config.renderer.opts.create_preview_win()
+  local create_win = vim.tbl_get(opts or {}, 'create_preview_win') or Config.renderer.opts.create_preview_win
+  if type(create_win) ~= 'function' then
+    create_win = Config.renderer.opts.create_preview_win
+  end
+  local dest_win = create_win()
+  if dest_win == 0 then
+    dest_win = vim.api.nvim_get_current_win()
+  end
   -- fallback
   if not dest_win or not vim.api.nvim_win_is_valid(dest_win) then
     vim.cmd('vsp')
@@ -55,7 +69,7 @@ function M.new(source_buf, source_win)
       vim.notify('buffer is empty', vim.log.levels.ERROR)
       return
     end
-    require('mdpreview.render').render(source_buf, function(data)
+    Renderer.render(source_buf, function(data)
       if data and #data > 0 then
         vim.bo[dest_buf].modifiable = true
         vim.api.nvim_buf_set_lines(dest_buf, 0, -1, false, data)
@@ -77,7 +91,7 @@ function M.new(source_buf, source_win)
 
   vim.api.nvim_create_autocmd({ 'BufLeave' }, {
     callback = function()
-      M.destroy(source_buf)
+      pcall(M.destroy, source_buf)
     end,
     buffer = source_buf,
     once = true,
@@ -85,6 +99,8 @@ function M.new(source_buf, source_win)
 
   views[source_buf] = {
     source_buf = source_buf,
+    source_win = source_win,
+    source_win_opts = source_win_opts,
     dest_buf = dest_buf,
     dest_win = dest_win,
     autocmd_id = autocmd_id,
@@ -94,7 +110,14 @@ end
 function M.destroy(buf)
   local session = get(buf)
   if session then
-    pcall(vim.api.nvim_win_close, session.dest_win, true)
+    if session.dest_win ~= session.source_win then
+      pcall(vim.api.nvim_win_close, session.dest_win, true)
+    else
+      vim.schedule(function()
+        vim.wo[session.source_win].signcolumn = session.source_win_opts.signcolumn
+        vim.wo[session.source_win].number = session.source_win_opts.number
+      end)
+    end
     pcall(vim.api.nvim_buf_delete, session.dest_buf, { force = true })
     pcall(vim.api.nvim_del_autocmd, session.autocmd_id)
     views[session.source_buf] = nil

@@ -22,7 +22,9 @@ First ensure you have `glow` (or another Markdown renderer CLI) installed on you
 
 ## Usage
 
-From a Markdown file, run the `:Mdpreview` command to start a live-updating preview in a vertical split.
+From a Markdown file, run the `:Mdpreview` command to start a live-updating preview in a vertical split, and `:Mdpreview!` to close it.
+You can also run `:MdpreviewCurrent` to run the preview in a new buffer in the current window, and `:MdpreviewCurrent!` to close it.
+Both previews can also be closed with `q`, or by closing the source buffer.
 
 ## Configuration
 
@@ -35,7 +37,7 @@ require('mdpreview').setup({
   -- enabled on these filetypes
   filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
   renderer = {
-    -- use the nvim buffer renderer
+    -- use the nvim buffer renderer, currently `buffer` is the only available backend
     backend = 'buffer',
     -- options for the renderer backend
     opts = {
@@ -46,6 +48,21 @@ require('mdpreview').setup({
         return vim.api.nvim_get_current_win()
       end,
     },
+  },
+})
+```
+
+## API
+
+You can override `Config.renderer` by passing it as a table into `preview()` like so:
+
+```lua
+require('mdpreview').preview({
+  backend = 'buffer',
+  opts = {
+    create_preview_win = function()
+      return some_window_id
+    end,
   },
 })
 ```

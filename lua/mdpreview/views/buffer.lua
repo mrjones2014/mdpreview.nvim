@@ -26,6 +26,26 @@ local function get(buf)
   return nil
 end
 
+local preview_win_opts = {
+  signcolumn = 'no',
+  number = false,
+  concealcursor = 'niv',
+}
+
+local function build_win_opts_restore_table(win)
+  local result = {}
+  for key, _ in pairs(preview_win_opts) do
+    result[key] = vim.wo[win][key]
+  end
+  return result
+end
+
+local function set_win_opts(win)
+  for key, value in pairs(preview_win_opts) do
+    vim.wo[win][key] = value
+  end
+end
+
 local M = {}
 
 ---Create a session
@@ -33,10 +53,7 @@ local M = {}
 ---@param source_win number cursor will be moved back to this window after setting up the view
 ---@param opts table|nil override default options
 function M.new(source_buf, source_win, opts)
-  local source_win_opts = {
-    signcolumn = vim.wo[source_win].signcolumn,
-    number = vim.wo[source_win].number,
-  }
+  local source_win_opts = build_win_opts_restore_table(source_win)
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')
   vim.api.nvim_buf_set_option(dest_buf, 'modifiable', false)
@@ -60,8 +77,7 @@ function M.new(source_buf, source_win, opts)
     dest_win = vim.api.nvim_get_current_win()
   end
 
-  vim.api.nvim_win_set_option(dest_win, 'signcolumn', 'no')
-  vim.api.nvim_win_set_option(dest_win, 'number', false)
+  set_win_opts(dest_win)
 
   local render_callback = function()
     local lines = vim.api.nvim_buf_get_lines(source_buf, 0, vim.api.nvim_buf_line_count(0), false)
@@ -114,8 +130,9 @@ function M.destroy(buf)
       pcall(vim.api.nvim_win_close, session.dest_win, true)
     else
       vim.schedule(function()
-        vim.wo[session.source_win].signcolumn = session.source_win_opts.signcolumn
-        vim.wo[session.source_win].number = session.source_win_opts.number
+        for key, value in pairs(session.source_win_opts) do
+          vim.wo[session.source_win][key] = value
+        end
       end)
     end
     pcall(vim.api.nvim_buf_delete, session.dest_buf, { force = true })

@@ -57,6 +57,14 @@ require('mdpreview').setup({
         vim.cmd('vsp')
         return vim.api.nvim_get_current_win()
       end,
+      -- options that will be set on the preview window
+      win_options = {
+        signcolumn = 'no',
+        number = false,
+        concealcursor = 'niv',
+        wrap = true,
+        linebreak = true,
+      },
     },
   },
 })

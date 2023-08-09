@@ -26,22 +26,23 @@ local function get(buf)
   return nil
 end
 
-local preview_win_opts = {
-  signcolumn = 'no',
-  number = false,
-  concealcursor = 'niv',
-}
-
-local function build_win_opts_restore_table(win)
+---@param win number
+---@param opts table|nil
+---@return table
+local function build_win_opts_restore_table(win, opts)
+  opts = opts or {}
   local result = {}
-  for key, _ in pairs(preview_win_opts) do
+  for key, _ in pairs(opts.win_options or {}) do
     result[key] = vim.wo[win][key]
   end
   return result
 end
 
-local function set_win_opts(win)
-  for key, value in pairs(preview_win_opts) do
+---@param win number
+---@param opts table|nil
+local function set_win_opts(win, opts)
+  opts = opts or {}
+  for key, value in pairs(opts.win_options or {}) do
     vim.wo[win][key] = value
   end
 end
@@ -53,7 +54,8 @@ local M = {}
 ---@param source_win number cursor will be moved back to this window after setting up the view
 ---@param opts table|nil override default options
 function M.new(source_buf, source_win, opts)
-  local source_win_opts = build_win_opts_restore_table(source_win)
+  opts = vim.tbl_deep_extend('force', {}, Config.renderer.opts, opts)
+  local source_win_opts = build_win_opts_restore_table(source_win, opts)
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')
   vim.api.nvim_buf_set_option(dest_buf, 'modifiable', false)
@@ -63,11 +65,11 @@ function M.new(source_buf, source_win, opts)
   vim.keymap.set('n', 'q', require('mdpreview').stop_preview, keymaps_opts)
   vim.keymap.set('n', '<Esc>', require('mdpreview').stop_preview, keymaps_opts)
 
-  local create_win = vim.tbl_get(opts or {}, 'create_preview_win') or Config.renderer.opts.create_preview_win
-  if type(create_win) ~= 'function' then
-    create_win = Config.renderer.opts.create_preview_win
+  if type(opts.create_preview_win) ~= 'function' then
+    opts.create_preview_win = Config.opts.create_preview_win
   end
-  local dest_win = create_win()
+
+  local dest_win = opts.create_preview_win()
   if dest_win == 0 then
     dest_win = vim.api.nvim_get_current_win()
   end
@@ -76,8 +78,6 @@ function M.new(source_buf, source_win, opts)
     vim.cmd('vsp')
     dest_win = vim.api.nvim_get_current_win()
   end
-
-  set_win_opts(dest_win)
 
   local render_callback = function()
     local lines = vim.api.nvim_buf_get_lines(source_buf, 0, vim.api.nvim_buf_line_count(0), false)
@@ -102,6 +102,10 @@ function M.new(source_buf, source_win, opts)
   vim.api.nvim_win_set_buf(dest_win, dest_buf)
   -- for some reason it only works to set the filetype after showing the buffer
   vim.api.nvim_buf_set_option(dest_buf, 'filetype', 'terminal')
+
+  vim.schedule(function()
+    set_win_opts(dest_win)
+  end)
 
   vim.api.nvim_set_current_win(source_win)
 

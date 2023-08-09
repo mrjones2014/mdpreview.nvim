@@ -121,6 +121,7 @@ function M.new(source_buf, source_win, opts)
     dest_win = dest_win,
     autocmd_id = autocmd_id,
   }
+  vim.b[dest_buf].mdpreview_session = views[source_buf]
 end
 
 function M.destroy(buf)

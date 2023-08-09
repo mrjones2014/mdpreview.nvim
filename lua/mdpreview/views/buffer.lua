@@ -27,7 +27,7 @@ local function get(buf)
 end
 
 ---@param win number
----@param opts table|nil
+---@param opts table
 ---@return table
 local function build_win_opts_restore_table(win, opts)
   opts = opts or {}
@@ -39,7 +39,7 @@ local function build_win_opts_restore_table(win, opts)
 end
 
 ---@param win number
----@param opts table|nil
+---@param opts table
 local function set_win_opts(win, opts)
   opts = opts or {}
   for key, value in pairs(opts.win_options or {}) do
@@ -104,7 +104,7 @@ function M.new(source_buf, source_win, opts)
   vim.api.nvim_buf_set_option(dest_buf, 'filetype', 'terminal')
 
   vim.schedule(function()
-    set_win_opts(dest_win)
+    set_win_opts(dest_win, opts)
   end)
 
   vim.api.nvim_set_current_win(source_win)

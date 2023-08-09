@@ -33,7 +33,17 @@ Default configuration shown below:
 ```lua
 require('mdpreview').setup({
   -- specify manually if `glow` is not on `$PATH` or you want to use another CLI, or use different args
-  cli_args = { 'glow', '-s', 'dark' },
+  cli_args = {
+    'glow',
+    -- glow assumes you want no colors if not run in a TTY
+    '-s',
+    'dark',
+    -- let nvim handle word wrapping, disable glow word wrap
+    '-w',
+    '1',
+    -- don't unexpectedly make network connections
+    '--local',
+  },
   -- enabled on these filetypes
   filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
   renderer = {

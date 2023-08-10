@@ -1,3 +1,8 @@
+-- as more backends are added, add as a union type on these two types
+---@alias MdpBackendConfig MdpBufferViewOpts
+---@alias MdpBackendName 'buffer'
+
+---@class MdpConfig
 return {
   cli_args = {
     'glow',
@@ -12,9 +17,11 @@ return {
   },
   filetypes = { 'markdown', 'markdown.pandoc', 'markdown.gfm' },
   renderer = {
+    ---@type MdpBackendName
     backend = 'buffer',
+    ---@type MdpBackendConfig
     opts = {
-      create_preview_win = function()
+      winnr = function()
         vim.cmd('vsp')
         return vim.api.nvim_get_current_win()
       end,

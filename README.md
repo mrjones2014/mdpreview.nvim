@@ -52,8 +52,9 @@ require('mdpreview').setup({
     -- options for the renderer backend
     opts = {
       -- if you don't want to use a vertical split, create your own window
-      -- and return the window ID
-      create_preview_win = function()
+      -- and return the window ID. May be a function or a number if you already
+      -- have the window ID
+      winnr = function()
         vim.cmd('vsp')
         return vim.api.nvim_get_current_win()
       end,
@@ -78,7 +79,7 @@ You can override `Config.renderer` by passing it as a table into `preview()` lik
 require('mdpreview').preview({
   backend = 'buffer',
   opts = {
-    create_preview_win = function()
+    winnr = function()
       return some_window_id
     end,
   },

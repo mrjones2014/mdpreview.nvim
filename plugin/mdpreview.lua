@@ -15,11 +15,7 @@ vim.api.nvim_create_user_command('MdpreviewCurrent', function(opts)
   else
     require('mdpreview').preview({
       backend = 'buffer',
-      opts = {
-        create_preview_win = function()
-          return 0
-        end,
-      },
+      opts = { winnr = 0 },
     })
   end
 end, {

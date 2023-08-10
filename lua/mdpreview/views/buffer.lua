@@ -9,6 +9,10 @@ local Renderer = require('mdpreview.render')
 ---@field dest_win number destination window being rendered into
 ---@field autocmd_id number ID of the autocmd that updates the view
 
+---@class MdpBufferViewOpts
+---@field winnr number|function
+---@field win_options table
+
 ---@type MdpBufferView[]
 local views = {}
 
@@ -27,7 +31,7 @@ local function get(buf)
 end
 
 ---@param win number
----@param opts table
+---@param opts MdpBufferViewOpts
 ---@return table
 local function build_win_opts_restore_table(win, opts)
   opts = opts or {}
@@ -39,7 +43,7 @@ local function build_win_opts_restore_table(win, opts)
 end
 
 ---@param win number
----@param opts table
+---@param opts MdpBufferViewOpts
 local function set_win_opts(win, opts)
   opts = opts or {}
   for key, value in pairs(opts.win_options or {}) do
@@ -52,9 +56,9 @@ local M = {}
 ---Create a session
 ---@param source_buf number
 ---@param source_win number cursor will be moved back to this window after setting up the view
----@param opts table|nil override default options
+---@param opts MdpBufferViewOpts|nil override default options
 function M.new(source_buf, source_win, opts)
-  opts = vim.tbl_deep_extend('force', {}, Config.renderer.opts, opts)
+  opts = vim.tbl_deep_extend('force', {}, Config.renderer.opts, opts) --[[@as MdpBufferViewOpts]]
   local source_win_opts = build_win_opts_restore_table(source_win, opts)
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')
@@ -65,18 +69,24 @@ function M.new(source_buf, source_win, opts)
   vim.keymap.set('n', 'q', require('mdpreview').stop_preview, keymaps_opts)
   vim.keymap.set('n', '<Esc>', require('mdpreview').stop_preview, keymaps_opts)
 
-  if type(opts.create_preview_win) ~= 'function' then
-    opts.create_preview_win = Config.opts.create_preview_win
+  if type(opts.winnr) ~= 'function' and type(opts.winnr) ~= 'number' then
+    opts.winnr = Config.renderer.opts.winnr
   end
 
-  local dest_win = opts.create_preview_win()
-  if dest_win == 0 then
-    dest_win = vim.api.nvim_get_current_win()
+  -- if it's a function, call it
+  if type(opts.winnr) == 'function' then
+    opts.winnr = opts.winnr()
+  end
+
+  if opts.winnr == 0 then
+    opts.winnr = vim.api.nvim_get_current_win()
   end
   -- fallback
-  if not dest_win or not vim.api.nvim_win_is_valid(dest_win) then
+  if
+      not opts.winnr or not vim.api.nvim_win_is_valid(opts.winnr --[[@as number]])
+  then
     vim.cmd('vsp')
-    dest_win = vim.api.nvim_get_current_win()
+    opts.winnr = vim.api.nvim_get_current_win()
   end
 
   local render_callback = function()
@@ -99,12 +109,12 @@ function M.new(source_buf, source_win, opts)
     buffer = source_buf,
   })
 
-  vim.api.nvim_win_set_buf(dest_win, dest_buf)
+  vim.api.nvim_win_set_buf(opts.winnr --[[@as number]], dest_buf)
   -- for some reason it only works to set the filetype after showing the buffer
   vim.api.nvim_buf_set_option(dest_buf, 'filetype', 'terminal')
 
   vim.schedule(function()
-    set_win_opts(dest_win, opts)
+    set_win_opts(opts.winnr --[[@as number]], opts)
   end)
 
   vim.api.nvim_set_current_win(source_win)
@@ -122,7 +132,7 @@ function M.new(source_buf, source_win, opts)
     source_win = source_win,
     source_win_opts = source_win_opts,
     dest_buf = dest_buf,
-    dest_win = dest_win,
+    dest_win = opts.winnr, ---@diagnostic disable-line
     autocmd_id = autocmd_id,
   }
   vim.b[dest_buf].mdpreview_session = views[source_buf]

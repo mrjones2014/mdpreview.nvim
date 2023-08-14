@@ -5,6 +5,10 @@ It can use any CLI that can render Markdown from `STDIN`.
 
 ![Demo gif of live updating Markdown preview](https://user-images.githubusercontent.com/8648891/258194101-9e78b245-3f3e-4bb5-a7de-c8cf513832c1.gif)
 
+## Plugin Status
+
+This plugin should be considered alpha software at this time. Breaking changes may land on `master` at any time. Once the plugin is stable I will move to semantic versioning.
+
 ## Installation
 
 First ensure you have `glow` (or another Markdown renderer CLI) installed on your system. If it is not in `$PATH`, you can configure an explicit path in the plugin settings.

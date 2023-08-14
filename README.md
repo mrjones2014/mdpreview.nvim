@@ -63,7 +63,7 @@ require('mdpreview').setup({
         return vim.api.nvim_get_current_win()
       end,
       -- options that will be set on the preview window
-      win_options = {
+      win_opts = {
         signcolumn = 'no',
         number = false,
         concealcursor = 'niv',

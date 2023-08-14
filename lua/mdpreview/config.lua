@@ -25,7 +25,7 @@ return {
         vim.cmd('vsp')
         return vim.api.nvim_get_current_win()
       end,
-      win_options = {
+      win_opts = {
         signcolumn = 'no',
         number = false,
         concealcursor = 'niv',

@@ -11,7 +11,7 @@ local Renderer = require('mdpreview.render')
 
 ---@class MdpBufferViewOpts
 ---@field winnr number|function
----@field win_options table
+---@field win_opts table
 
 ---@type MdpBufferView[]
 local views = {}
@@ -36,7 +36,7 @@ end
 local function build_win_opts_restore_table(win, opts)
   opts = opts or {}
   local result = {}
-  for key, _ in pairs(opts.win_options or {}) do
+  for key, _ in pairs(opts.win_opts or {}) do
     result[key] = vim.wo[win][key]
   end
   return result
@@ -46,7 +46,7 @@ end
 ---@param opts MdpBufferViewOpts
 local function set_win_opts(win, opts)
   opts = opts or {}
-  for key, value in pairs(opts.win_options or {}) do
+  for key, value in pairs(opts.win_opts or {}) do
     vim.wo[win][key] = value
   end
 end
@@ -83,7 +83,7 @@ function M.new(source_buf, source_win, opts)
   end
   -- fallback
   if
-      not opts.winnr or not vim.api.nvim_win_is_valid(opts.winnr --[[@as number]])
+    not opts.winnr or not vim.api.nvim_win_is_valid(opts.winnr --[[@as number]])
   then
     vim.cmd('vsp')
     opts.winnr = vim.api.nvim_get_current_win()

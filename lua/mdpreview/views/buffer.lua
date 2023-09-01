@@ -109,6 +109,22 @@ function M.new(source_buf, source_win, opts)
     buffer = source_buf,
   })
 
+  vim.api.nvim_create_autocmd({ 'WinScrolled' }, {
+    pattern = tostring(source_win),
+    callback = function()
+      if
+        not vim.api.nvim_win_is_valid(source_win) or not vim.api.nvim_win_is_valid(opts.winnr --[[@as integer]])
+      then
+        return
+      end
+      vim.api.nvim_set_current_win(source_win)
+      local view = vim.fn.winsaveview()
+      vim.api.nvim_set_current_win(opts.winnr --[[@as integer]])
+      vim.fn.winrestview(view --[[@as table<string, any>]])
+      vim.api.nvim_set_current_win(source_win)
+    end,
+  })
+
   vim.api.nvim_win_set_buf(opts.winnr --[[@as number]], dest_buf)
   -- for some reason it only works to set the filetype after showing the buffer
   vim.api.nvim_buf_set_option(dest_buf, 'filetype', 'terminal')
@@ -121,7 +137,12 @@ function M.new(source_buf, source_win, opts)
 
   vim.api.nvim_create_autocmd({ 'BufLeave' }, {
     callback = function()
-      pcall(M.destroy, source_buf)
+      vim.schedule(function()
+        local buf = vim.api.nvim_get_current_buf()
+        if buf ~= source_buf and buf ~= dest_buf then
+          pcall(M.destroy, source_buf)
+        end
+      end)
     end,
     buffer = source_buf,
     once = true,

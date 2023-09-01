@@ -58,7 +58,7 @@ local M = {}
 ---@param source_win number cursor will be moved back to this window after setting up the view
 ---@param opts MdpBufferViewOpts|nil override default options
 function M.new(source_buf, source_win, opts)
-  opts = vim.tbl_deep_extend('force', {}, Config.renderer.opts, opts) --[[@as MdpBufferViewOpts]]
+  opts = vim.tbl_deep_extend('force', {}, Config.renderer.opts or {}, opts or {}) --[[@as MdpBufferViewOpts]]
   local source_win_opts = build_win_opts_restore_table(source_win, opts)
   local dest_buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(dest_buf, 'bufhidden', 'wipe')

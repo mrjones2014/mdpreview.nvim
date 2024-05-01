@@ -3,7 +3,7 @@
 ---@alias MdpBackendName 'buffer'
 
 ---@class MdpConfig
-return {
+local config = {
   cli_args = {
     'glow',
     -- glow assumes you want no colors if not run in a TTY
@@ -35,3 +35,23 @@ return {
     },
   },
 }
+
+local M = setmetatable({}, {
+  __index = function(_, key)
+    return config[key]
+  end,
+  __newindex = function(_, key, value)
+    config[key] = value
+  end,
+})
+
+function M.setup(new_config)
+  config = vim.tbl_deep_extend('force', config, new_config or {})
+
+  -- normalize to table
+  if type(config.cli_args) ~= 'table' then
+    config.cli_args = { config.cli_args }
+  end
+end
+
+return M
